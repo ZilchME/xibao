@@ -18,13 +18,35 @@ const getT2s = () => {
   return t2sConfig.instance
 }
 
-const xibaoSize = {
-  width: 1292,
-  height: 968
-}
-const beibaoSize = {
-  width: 1300,
-  height: 974
+const presetConfigs = {
+  xibao: {
+    background: {
+      path: resolve(__dirname, 'assets/xibao.webp'),
+      width: 1292,
+      height: 968
+    },
+    defaultConfig: {
+      color: 'red',
+      strokeColor: '#fcf88d',
+      strokeSize: 12,
+      fontSize: 108
+    },
+    lineSpace: 16
+  },
+  beibao: {
+    background: {
+      path: resolve(__dirname, 'assets/beibao.webp'),
+      width: 1300,
+      height: 974
+    },
+    defaultConfig: {
+      color: '#2d2d2d',
+      strokeColor: 'white',
+      strokeSize: 12,
+      fontSize: 108
+    },
+    lineSpace: 16
+  }
 }
 
 /**
@@ -231,45 +253,26 @@ const custom = ({
  * @description 合成喜报
  * @param { string|string[]|TextOption[] } textOrTexts
  */
-const xibao = (textOrTexts) => {
+const renderPreset = (template, textOrTexts, style = {}) => {
+  const preset = presetConfigs[template]
+  if (!preset) throw new Error(`Unknown image template: ${template}`)
+
+  const { lineSpace = preset.lineSpace, ...textConfig } = style
   return custom({
-    background: {
-      path: resolve(__dirname, 'assets/xibao.webp'),
-      width: xibaoSize.width,
-      height: xibaoSize.height
-    },
+    background: preset.background,
     textOrTexts,
-    defaultConfig: {
-      color: 'red',
-      strokeColor: '#fcf88d',
-      strokeSize: 12,
-      fontSize: 108
-    },
-    lineSpace: 16
+    defaultConfig: { ...preset.defaultConfig, ...textConfig },
+    lineSpace
   })
 }
+
+const xibao = (textOrTexts, style) => renderPreset('xibao', textOrTexts, style)
 /**
  * @function beibao
  * @description 合成悲报
  * @param { string|string[]|TextOption[] } textOrTexts
  */
-const beibao = (textOrTexts) => {
-  return custom({
-    background: {
-      path: resolve(__dirname, 'assets/beibao.webp'),
-      width: beibaoSize.width,
-      height: beibaoSize.height
-    },
-    textOrTexts,
-    defaultConfig: {
-      color: '#2d2d2d',
-      strokeColor: 'white',
-      strokeSize: 12,
-      fontSize: 108
-    },
-    lineSpace: 16
-  })
-}
+const beibao = (textOrTexts, style) => renderPreset('beibao', textOrTexts, style)
 
 /**
  * @function setFont
@@ -283,6 +286,7 @@ const setFont = fontpath => {
 module.exports = {
   xibao,
   beibao,
+  renderPreset,
   custom,
   setFont
 }

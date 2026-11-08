@@ -4,7 +4,11 @@
   "description": "一个合成喜报/悲报图片的 nodejs 库, 基于 sharpjs",
   "main": "index.js",
   "scripts": {
+    "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
@@ -17,6 +21,7 @@
   },
   "homepage": "https://github.com/RedBeanN/xibao#readme",
   "dependencies": {
+    "fastify": "^5.0.0",
     "sharp": "^0.32.0",
     "text-to-svg": "^3.1.5"
   }
