@@ -5,6 +5,7 @@ const { loadConfig } = require('./config')
 const healthRoute = require('./routes/health')
 const templatesRoute = require('./routes/templates')
 const imagesRoute = require('./routes/images')
+const { createImageCache } = require('./cache/image-cache')
 
 const createApp = (options = {}) => {
   const config = options.config || loadConfig()
@@ -12,10 +13,11 @@ const createApp = (options = {}) => {
     logger: options.logger === undefined ? { level: config.logLevel } : options.logger,
     bodyLimit: config.bodyLimit
   })
+  const imageCache = createImageCache(config)
 
   app.register(healthRoute)
   app.register(templatesRoute)
-  app.register(imagesRoute)
+  app.register(imagesRoute, { imageCache })
 
   app.setNotFoundHandler((request, reply) => {
     reply.code(404).send({

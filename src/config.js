@@ -11,23 +11,6 @@ const parseInteger = (name, value, fallback, { min, max }) => {
   return parsed
 }
 
-const parsePublicBaseUrl = (value) => {
-  if (!value) return null
-
-  let parsed
-  try {
-    parsed = new URL(value)
-  } catch {
-    throw new Error('PUBLIC_BASE_URL must be a valid absolute URL')
-  }
-
-  if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password || parsed.search || parsed.hash) {
-    throw new Error('PUBLIC_BASE_URL must use http(s) and cannot include credentials, query, or fragment')
-  }
-
-  return value.replace(/\/+$/, '')
-}
-
 const loadConfig = (env = process.env) => {
   const logLevel = env.LOG_LEVEL || 'info'
   if (!LOG_LEVELS.has(logLevel)) {
@@ -38,10 +21,21 @@ const loadConfig = (env = process.env) => {
     host: env.HOST || '0.0.0.0',
     port: parseInteger('PORT', env.PORT, 3000, { min: 1, max: 65535 }),
     logLevel,
-    publicBaseUrl: parsePublicBaseUrl(env.PUBLIC_BASE_URL),
     bodyLimit: parseInteger('REQUEST_BODY_LIMIT_BYTES', env.REQUEST_BODY_LIMIT_BYTES, 16 * 1024, {
       min: 1024,
       max: 1024 * 1024
+    }),
+    cacheTtlSeconds: parseInteger('CACHE_TTL_SECONDS', env.CACHE_TTL_SECONDS, 3600, {
+      min: 1,
+      max: 30 * 24 * 60 * 60
+    }),
+    cacheMaxEntries: parseInteger('CACHE_MAX_ENTRIES', env.CACHE_MAX_ENTRIES, 100, {
+      min: 1,
+      max: 10000
+    }),
+    cacheMaxBytes: parseInteger('CACHE_MAX_BYTES', env.CACHE_MAX_BYTES, 64 * 1024 * 1024, {
+      min: 1024,
+      max: 1024 * 1024 * 1024
     })
   }
 }

@@ -2,6 +2,7 @@
 
 const { renderPreset } = require('../..')
 const { TEMPLATE_IDS } = require('../templates')
+const { normalizeImageRequest } = require('../cache/image-cache')
 
 const colorPattern = '^(?:#[0-9a-fA-F]{3,4}|#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?|[a-zA-Z]{1,20})$'
 
@@ -24,7 +25,6 @@ const imageRequestSchema = {
         ]
       },
       output: { type: 'string', enum: ['jpeg', 'png'] },
-      delivery: { type: 'string', enum: ['binary', 'url'] },
       style: {
         type: 'object',
         additionalProperties: false,
@@ -48,9 +48,9 @@ const getTextStats = (text) => {
   }
 }
 
-const imagesRoute = async (app) => {
+const imagesRoute = async (app, { imageCache }) => {
   app.post('/api/v1/images', { schema: imageRequestSchema }, async (request, reply) => {
-    const { template, text, style = {}, output = 'jpeg', delivery = 'binary' } = request.body
+    const { template, text, style = {}, output = 'jpeg' } = request.body
     const { lines, characterCount } = getTextStats(text)
 
     if (lines.length > 16 || characterCount > 512 || lines.every(line => !line.trim())) {
@@ -71,25 +71,20 @@ const imagesRoute = async (app) => {
       })
     }
 
-    if (delivery === 'url') {
-      return reply.code(501).send({
-        error: {
-          code: 'URL_DELIVERY_NOT_IMPLEMENTED',
-          message: 'URL delivery will be available in a later development phase'
-        }
-      })
-    }
+    const normalizedRequest = normalizeImageRequest({ template, text, style, output })
+    const { buffer, status } = await imageCache.getOrCreate(normalizedRequest, async () => {
+      let image = await renderPreset(template, text, normalizedRequest.style)
+      if (output === 'png') image = image.png()
+      else image = image.jpeg()
+      return image.toBuffer()
+    })
 
-    let image = await renderPreset(template, text, style)
-    if (output === 'png') image = image.png()
-    else image = image.jpeg()
-
-    const buffer = await image.toBuffer()
     reply
       .header('Content-Type', output === 'png' ? 'image/png' : 'image/jpeg')
       .header('Content-Length', buffer.length)
       .header('Content-Disposition', `inline; filename="${template}.${output}"`)
       .header('X-Content-Type-Options', 'nosniff')
+      .header('X-Cache', status)
       .code(200)
       .send(buffer)
   })
