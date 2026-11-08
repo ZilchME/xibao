@@ -1,0 +1,14 @@
+services:
+  xibao-api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      REQUEST_BODY_LIMIT_BYTES: "${REQUEST_BODY_LIMIT_BYTES:-16384}"
+      CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-3600}"
+      CACHE_MAX_ENTRIES: "${CACHE_MAX_ENTRIES:-100}"
+      CACHE_MAX_BYTES: "${CACHE_MAX_BYTES:-67108864}"

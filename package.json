@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "一个合成喜报/悲报图片的 nodejs 库, 基于 sharpjs",
   "main": "index.js",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -21,6 +22,8 @@
   },
   "homepage": "https://github.com/RedBeanN/xibao#readme",
   "dependencies": {
+    "@fastify/swagger": "^9",
+    "@fastify/swagger-ui": "^5",
     "fastify": "^5.0.0",
     "lru-cache": "^11.2.2",
     "sharp": "^0.32.0",

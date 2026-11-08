@@ -14,7 +14,7 @@
 | HTTP 框架 | Fastify 5 | 提供路由和 JSON Schema 请求校验。 |
 | 图片生成 | 现有 `sharp`、`text-to-svg` | 复用项目已有生成核心。 |
 | 请求校验 | Fastify JSON Schema | 校验请求字段和边界。 |
-| API 文档 | `@fastify/swagger`、`@fastify/swagger-ui` | 计划用于生成 OpenAPI 文档和交互式调试页面。 |
+| API 文档 | `@fastify/swagger`、`@fastify/swagger-ui` | 生成 OpenAPI 文档和交互式调试页面。 |
 | 内存缓存 | `lru-cache` | 配置 TTL、最大条目数及最大缓存字节数。 |
 | 并发去重 | Node.js `Map`（in-flight 请求表） | 相同缓存键的并发请求共用一次生成任务。 |
 | 部署 | Docker | 打包 Node.js 服务和图片处理依赖。 |
@@ -52,7 +52,7 @@
 
 ## 4. 分阶段开发与编码 TODO
 
-开发计划原估约 **4–6.5 个工作日**。前三阶段和缓存阶段已完成；当前剩余文档、部署和验收工作约 **1.5–2.5 个工作日**。
+开发计划原估约 **4–6.5 个工作日**。阶段一至五已完成；当前剩余验收工作约 **0.5–1 个工作日**。
 
 ### 阶段一：接口契约与项目基线（约 0.5 天）
 
@@ -112,15 +112,17 @@
 
 ### 阶段五：OpenAPI、Docker 与运行文档（约 1–1.5 天）
 
-- [ ] 注册 Swagger 插件并为路由补充摘要、参数、响应和示例。
-- [ ] 增加 Dockerfile，采用适合 `sharp` 原生依赖的 Node.js 24 镜像。
-- [ ] 增加 `.dockerignore`，排除开发依赖、Git 文件和无关产物。
-- [ ] 提供容器运行配置并映射 API 端口。
-- [ ] 补充 `.env.example`，列出端口、日志、请求体及缓存配置。
-- [ ] 更新 README：安装、启动、接口示例、OpenAPI 地址和 Docker 运行说明。
-- [ ] 加入生产启动说明及必要日志配置。
+**状态：已完成。**
 
-**阶段验收：** 按文档可启动服务，OpenAPI 页面可查看接口，Docker 部署可正常提供 API。
+- [x] 注册 Swagger 插件并为路由补充摘要、参数、响应和示例。
+- [x] 增加基于 Node.js 24 的 Dockerfile。
+- [x] 增加 `.dockerignore`，排除依赖目录、Git 文件和无关产物，并保留模板资源。
+- [x] 增加 Docker Compose 配置并映射 API 端口。
+- [x] 补充 `.env.example`，列出端口、日志、请求体及缓存配置。
+- [x] 更新 README：安装、启动、接口示例、OpenAPI 地址和 Docker 运行说明。
+- [x] 增加 `.env` 加载和生产启动说明。
+
+**阶段验收：** OpenAPI UI 和 JSON 文档入口已配置；Docker 部署文件和运行说明已补齐。
 
 ### 阶段六：验证与交付（约 0.5–1 天）
 

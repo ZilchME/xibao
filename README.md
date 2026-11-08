@@ -4,6 +4,71 @@
 
 一个使用 `nodejs` 合成喜报/悲报图片的小工具, 合成图片基于高效的 [`sharp`](https://sharp.pixelplumbing.com)，仅需数毫秒即可合成一张喜报！
 
+## REST API 服务
+
+项目也提供 REST API，可通过 HTTP 生成图片。接口直接返回 JPEG 或 PNG 图片数据；相同请求会命中进程内缓存。缓存服务重启后清空。本版本不提供图床 URL 或持久化图片存储。
+
+### 本地启动
+
+需要 Node.js 24 或更高版本。复制环境变量示例并安装依赖：
+
+```sh
+cp .env.example .env
+corepack yarn install --frozen-lockfile
+corepack yarn start
+```
+
+默认监听 `http://127.0.0.1:3000`。也可以运行 `pnpm start` 启动服务。
+
+### 接口
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/healthz` | 健康检查 |
+| `GET` | `/api/v1/templates` | 查询模板和默认样式 |
+| `POST` | `/api/v1/images` | 生成图片并返回二进制 |
+| `GET` | `/docs` | Swagger UI 交互式文档 |
+| `GET` | `/docs/json` | OpenAPI JSON |
+
+生成图片示例：
+
+```sh
+curl -fS -X POST http://127.0.0.1:3000/api/v1/images \
+  -H 'Content-Type: application/json' \
+  --data '{"template":"xibao","text":"接口生成测试","output":"jpeg"}' \
+  -o xibao-test.jpg
+```
+
+请求支持 `template`（`xibao` 或 `beibao`）、`text`（字符串或字符串数组）、`output`（`jpeg` 或 `png`）和可选 `style`。成功响应的 `X-Cache` 为 `HIT`、`MISS` 或 `COALESCED`。
+
+### 配置
+
+复制 `.env.example` 为 `.env` 后可调整配置：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `HOST` | `0.0.0.0` | 监听地址 |
+| `PORT` | `3000` | API 端口 |
+| `LOG_LEVEL` | `info` | Fastify 日志级别 |
+| `REQUEST_BODY_LIMIT_BYTES` | `16384` | 请求体大小上限 |
+| `CACHE_TTL_SECONDS` | `3600` | 图片缓存 TTL |
+| `CACHE_MAX_ENTRIES` | `100` | 缓存条目上限 |
+| `CACHE_MAX_BYTES` | `67108864` | 缓存总字节上限 |
+| `API_PORT` | `3000` | Docker Compose 映射到宿主机的端口 |
+
+### Docker 部署
+
+```sh
+cp .env.example .env
+docker compose up --build -d
+```
+
+默认 API 地址为 `http://127.0.0.1:3000`，Swagger UI 位于 `/docs`。用 `API_PORT` 可调整宿主机端口。停止服务：
+
+```sh
+docker compose down
+```
+
 ## Usage
 
 ```sh

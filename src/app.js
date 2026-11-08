@@ -1,6 +1,8 @@
 'use strict'
 
 const Fastify = require('fastify')
+const swagger = require('@fastify/swagger')
+const swaggerUi = require('@fastify/swagger-ui')
 const { loadConfig } = require('./config')
 const healthRoute = require('./routes/health')
 const templatesRoute = require('./routes/templates')
@@ -14,6 +16,27 @@ const createApp = (options = {}) => {
     bodyLimit: config.bodyLimit
   })
   const imageCache = createImageCache(config)
+
+  app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Xibao Image API',
+        description: '生成喜报、悲报图片的 RESTful API。',
+        version: '1.0.0'
+      },
+      tags: [
+        { name: 'System', description: '服务状态' },
+        { name: 'Images', description: '图片模板与生成' }
+      ]
+    }
+  })
+  app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: false
+    }
+  })
 
   app.register(healthRoute)
   app.register(templatesRoute)

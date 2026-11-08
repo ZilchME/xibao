@@ -49,7 +49,67 @@ const getTextStats = (text) => {
 }
 
 const imagesRoute = async (app, { imageCache }) => {
-  app.post('/api/v1/images', { schema: imageRequestSchema }, async (request, reply) => {
+  app.post('/api/v1/images', {
+    schema: {
+      ...imageRequestSchema,
+      tags: ['Images'],
+      summary: '生成图片',
+      description: '按模板生成喜报或悲报图片，响应体为 JPEG 或 PNG 图片二进制。缓存状态见 X-Cache 响应头。',
+      body: {
+        ...imageRequestSchema.body,
+        examples: [{
+          template: 'xibao',
+          text: ['本群已升级', '成为喜报群'],
+          output: 'jpeg',
+          style: { fontSize: 108, color: 'red' }
+        }]
+      },
+      response: {
+        200: {
+          description: '生成的图片',
+          headers: {
+            'X-Cache': {
+              description: '缓存状态：命中、生成或复用并发生成任务。',
+              schema: { type: 'string', enum: ['HIT', 'MISS', 'COALESCED'] }
+            }
+          },
+          content: {
+            'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+            'image/png': { schema: { type: 'string', format: 'binary' } }
+          }
+        },
+        400: {
+          description: '请求参数无效',
+          type: 'object',
+          properties: {
+            error: {
+              type: 'object',
+              properties: {
+                code: { type: 'string' },
+                message: { type: 'string' },
+                details: { type: 'array', items: { type: 'object' } }
+              }
+            }
+          }
+        },
+        413: {
+          description: '请求体超过大小上限',
+          type: 'object',
+          properties: { error: { type: 'object' } }
+        },
+        415: {
+          description: 'Content-Type 必须为 application/json',
+          type: 'object',
+          properties: { error: { type: 'object' } }
+        },
+        500: {
+          description: '图片生成失败',
+          type: 'object',
+          properties: { error: { type: 'object' } }
+        }
+      }
+    }
+  }, async (request, reply) => {
     const { template, text, style = {}, output = 'jpeg' } = request.body
     const { lines, characterCount } = getTextStats(text)
 

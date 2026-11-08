@@ -1,0 +1,13 @@
+node_modules
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.tmp
+*.log
+*.jpg
+*.png
+docs
+test.js
+test.png
